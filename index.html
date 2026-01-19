@@ -200,41 +200,46 @@
             resultsBox.innerHTML = "";
             stepsBox.innerHTML = "";
 
-            let leukemiaProb = 0;
-            let healthyProb = 0;
+            // Show all predictions
+let bestClass = "";
+let bestProb = 0;
 
-            predictions.forEach(p => {
-                const percent = (p.probability * 100).toFixed(2);
+predictions.forEach(p => {
+    const percent = (p.probability * 100).toFixed(2);
 
-                const line = document.createElement("div");
-                line.className = "result-line";
-                line.textContent = `${p.className}: ${percent}%`;
-                resultsBox.appendChild(line);
+    const line = document.createElement("div");
+    line.className = "result-line";
+    line.textContent = `${p.className}: ${percent}%`;
+    resultsBox.appendChild(line);
 
-                if (p.className === "ALL Blood Cells") leukemiaProb = p.probability;
-                if (p.className === "Healthy Blood Cells") healthyProb = p.probability;
-            });
+    if (p.probability > bestProb) {
+        bestProb = p.probability;
+        bestClass = p.className;
+    }
+});
 
-            if (leukemiaProb > 0.5) {
-                finalBox.innerHTML = `Final Result: <span class="leukemia">ALL Blood Cells (${(leukemiaProb * 100).toFixed(2)}%)</span>`;
+// Decide based on the highest probability
+if (bestClass.toLowerCase().includes("all")) {
+    finalBox.innerHTML = `Final Result: <span class="leukemia">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
 
-                stepsBox.innerHTML = `
-                    The model detected features commonly associated with ALL Blood Cells.<br><br>
-                    This does NOT confirm any medical condition.<br><br>
-                    If this were a real medical concern, the next step would be to consult a licensed healthcare professional 
-                    who can perform proper diagnostic testing.<br><br>
-                    This tool is for educational use only.
-                `;
-            } else {
-                finalBox.innerHTML = `Final Result: <span class="healthy">Healthy Blood Cells (${(healthyProb * 100).toFixed(2)}%)</span>`;
+    stepsBox.innerHTML = `
+        The model detected features commonly associated with ALL Blood Cells.<br><br>
+        This does NOT confirm any medical condition.<br><br>
+        If this were a real medical concern, the next step would be to consult a licensed healthcare professional 
+        who can perform proper diagnostic testing.<br><br>
+        This tool is for educational use only.
+    `;
+} else {
+    finalBox.innerHTML = `Final Result: <span class="healthy">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
 
-                stepsBox.innerHTML = `
-                    The model did not detect features commonly associated with ALL Blood Cells.<br><br>
-                    This does NOT guarantee medical health.<br><br>
-                    Only a trained medical professional can evaluate real blood samples and provide an accurate diagnosis.<br><br>
-                    This tool is for educational use only.
-                `;
-            }
+    stepsBox.innerHTML = `
+        The model did not detect features commonly associated with ALL Blood Cells.<br><br>
+        This does NOT guarantee medical health.<br><br>
+        Only a trained medical professional can evaluate real blood samples and provide an accurate diagnosis.<br><br>
+        This tool is for educational use only.
+    `;
+}
+
         };
     });
 </script>
