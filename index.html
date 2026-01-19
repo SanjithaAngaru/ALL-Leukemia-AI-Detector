@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leukemia Detector (Webcam + Upload)</title>
 
-    <!-- Load TensorFlow + Teachable Machine (CORRECT VERSION) -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <!-- Load TensorFlow + Teachable Machine -->
+    <script src="https://cdn.jsdelivr.net"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
 
-    <!-- CSS -->
+    <!-- Original CSS Styles -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,9 +18,7 @@
             background: #f5f5f5;
         }
 
-        h1 {
-            margin-bottom: 10px;
-        }
+        h1 { margin-bottom: 10px; }
 
         button {
             padding: 10px 20px;
@@ -33,13 +31,9 @@
             margin: 10px;
         }
 
-        button:hover {
-            background: #45a049;
-        }
+        button:hover { background: #45a049; }
 
-        #webcam-container, #upload-container {
-            margin-top: 20px;
-        }
+        #webcam-container, #upload-container { margin-top: 20px; }
 
         #label-container div, #upload-labels div {
             margin-top: 8px;
@@ -58,6 +52,7 @@
             max-width: 300px;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            display: none; /* Hidden until an image is uploaded */
         }
 
         .final-result {
@@ -88,7 +83,7 @@
 
 <body>
 
-    <!-- INTRODUCTION SECTION -->
+    <!-- RESTORED INTRODUCTION SECTION -->
     <div class="intro-box">
         <h1>Acute Lymphoblastic Leukemia (ALL) Detection Tool</h1>
 
@@ -131,42 +126,50 @@
     <!-- Upload Section -->
     <h2>Upload an Image</h2>
     <input type="file" id="imageUpload" accept="image/*">
-    <img id="preview">
+    <br>
+    <img id="preview" src="">
     <div id="upload-labels"></div>
     <div id="upload-final" class="final-result"></div>
 
-    <!-- JavaScript -->
+    <!-- FIXED JAVASCRIPT -->
     <script>
-        const URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
+        // Renamed 'URL' to 'MODEL_URL' to avoid browser naming conflicts
+        const MODEL_URL = "https://teachablemachine.withgoogle.com";
 
         let model, webcam, labelContainer, maxPredictions;
 
         async function loadModel() {
-            const modelURL = URL + "model.json";
-            const metadataURL = URL + "metadata.json";
-            model = await tmImage.load(modelURL, metadataURL);
-            maxPredictions = model.getTotalClasses();
+            if (!model) {
+                const modelJson = MODEL_URL + "model.json";
+                const metadataJson = MODEL_URL + "metadata.json";
+                model = await tmImage.load(modelJson, metadataJson);
+                maxPredictions = model.getTotalClasses();
+            }
         }
 
-        // -------------------------
-        // WEBCAM MODE
-        // -------------------------
+        // --- WEBCAM MODE ---
         async function initWebcam() {
             await loadModel();
 
             const flip = true;
             webcam = new tmImage.Webcam(200, 200, flip);
-            await webcam.setup();
-            await webcam.play();
-            window.requestAnimationFrame(loop);
+            
+            try {
+                await webcam.setup(); // Request permission
+                await webcam.play();
+                window.requestAnimationFrame(loop);
 
-            document.getElementById("webcam-container").innerHTML = "";
-            document.getElementById("webcam-container").appendChild(webcam.canvas);
+                document.getElementById("webcam-container").innerHTML = "";
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
 
-            labelContainer = document.getElementById("label-container");
-            labelContainer.innerHTML = "";
-            for (let i = 0; i < maxPredictions; i++) {
-                labelContainer.appendChild(document.createElement("div"));
+                labelContainer = document.getElementById("label-container");
+                labelContainer.innerHTML = "";
+                for (let i = 0; i < maxPredictions; i++) {
+                    labelContainer.appendChild(document.createElement("div"));
+                }
+            } catch (e) {
+                alert("Could not access webcam. Please ensure you are using HTTPS or a local server.");
+                console.error(e);
             }
         }
 
@@ -178,41 +181,36 @@
 
         async function predictWebcam() {
             const prediction = await model.predict(webcam.canvas);
-
             let highestClass = "";
             let highestProb = 0;
 
             for (let i = 0; i < maxPredictions; i++) {
                 const prob = prediction[i].probability;
-                const percent = (prob * 100).toFixed(2);
-                const classPrediction = `${prediction[i].className}: ${percent}%`;
-
-                labelContainer.childNodes[i].innerHTML = classPrediction;
+                labelContainer.childNodes[i].innerHTML = `${prediction[i].className}: ${(prob * 100).toFixed(2)}%`;
 
                 if (prob > highestProb) {
                     highestProb = prob;
                     highestClass = prediction[i].className;
                 }
             }
-
-            const finalPercent = (highestProb * 100).toFixed(2);
-            document.getElementById("webcam-final").innerHTML =
-                `Final Result: ${highestClass} (${finalPercent}%)`;
+            document.getElementById("webcam-final").innerHTML = `Final Result: ${highestClass}`;
         }
 
-        // -------------------------
-        // UPLOAD MODE
-        // -------------------------
+        // --- UPLOAD MODE ---
         document.getElementById("imageUpload").addEventListener("change", async function (event) {
             await loadModel();
 
             const file = event.target.files[0];
+            if (!file) return;
+
             const img = document.getElementById("preview");
-            img.src = URL.createObjectURL(file);
+            img.style.display = "inline-block"; // Show image
+            
+            // Use window.URL explicitly to avoid confusion with the model URL
+            img.src = window.URL.createObjectURL(file);
 
             img.onload = async () => {
                 const prediction = await model.predict(img);
-
                 const uploadLabels = document.getElementById("upload-labels");
                 uploadLabels.innerHTML = "";
 
@@ -220,9 +218,8 @@
                 let highestProb = 0;
 
                 prediction.forEach(p => {
-                    const percent = (p.probability * 100).toFixed(2);
                     const div = document.createElement("div");
-                    div.innerHTML = `${p.className}: ${percent}%`;
+                    div.innerHTML = `${p.className}: ${(p.probability * 100).toFixed(2)}%`;
                     uploadLabels.appendChild(div);
 
                     if (p.probability > highestProb) {
@@ -231,9 +228,7 @@
                     }
                 });
 
-                const finalPercent = (highestProb * 100).toFixed(2);
-                document.getElementById("upload-final").innerHTML =
-                    `Final Result: ${highestClass} (${finalPercent}%)`;
+                document.getElementById("upload-final").innerHTML = `Final Result: ${highestClass}`;
             };
         });
     </script>
