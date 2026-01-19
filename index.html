@@ -33,15 +33,17 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
 
-        #upload-labels div {
-            margin-top: 8px;
-            font-size: 18px;
+        #results {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+
+        .result-line {
             background: white;
-            padding: 8px;
-            border-radius: 6px;
+            padding: 10px;
+            margin: 8px auto;
             width: 260px;
-            margin-left: auto;
-            margin-right: auto;
+            border-radius: 6px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
@@ -78,19 +80,19 @@
     <br>
     <img id="preview">
 
-    <div id="upload-labels"></div>
-    <div id="upload-final" class="final-result"></div>
+    <div id="results"></div>
+    <div id="final" class="final-result"></div>
 
     <script>
-        const URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
+        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
 
-        let model, maxPredictions;
+        let model;
+        let maxClasses;
 
         async function loadModel() {
-            const modelURL = URL + "model.json";
-            const metadataURL = URL + "metadata.json";
-            model = await tmImage.load(modelURL, metadataURL);
-            maxPredictions = model.getTotalClasses();
+            if (model) return; // prevent reloading
+            model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+            maxClasses = model.getTotalClasses();
         }
 
         document.getElementById("imageUpload").addEventListener("change", async function (event) {
@@ -101,29 +103,30 @@
             img.src = URL.createObjectURL(file);
 
             img.onload = async () => {
-                const prediction = await model.predict(img);
+                const predictions = await model.predict(img);
 
-                const uploadLabels = document.getElementById("upload-labels");
-                uploadLabels.innerHTML = "";
+                const resultsBox = document.getElementById("results");
+                resultsBox.innerHTML = "";
 
-                let highestClass = "";
-                let highestProb = 0;
+                let bestClass = "";
+                let bestProb = 0;
 
-                prediction.forEach(p => {
+                predictions.forEach(p => {
                     const percent = (p.probability * 100).toFixed(2);
-                    const div = document.createElement("div");
-                    div.innerHTML = `${p.className}: ${percent}%`;
-                    uploadLabels.appendChild(div);
 
-                    if (p.probability > highestProb) {
-                        highestProb = p.probability;
-                        highestClass = p.className;
+                    const line = document.createElement("div");
+                    line.className = "result-line";
+                    line.textContent = `${p.className}: ${percent}%`;
+                    resultsBox.appendChild(line);
+
+                    if (p.probability > bestProb) {
+                        bestProb = p.probability;
+                        bestClass = p.className;
                     }
                 });
 
-                const finalPercent = (highestProb * 100).toFixed(2);
-                document.getElementById("upload-final").innerHTML =
-                    `Final Result: ${highestClass} (${finalPercent}%)`;
+                document.getElementById("final").textContent =
+                    `Final Result: ${bestClass} (${(bestProb * 100).toFixed(2)}%)`;
             };
         });
     </script>
