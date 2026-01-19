@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leukemia Detector (Upload Only)</title>
+    <title>Acute Lymphoblastic Leukemia Detector</title>
 
     <!-- Correct TensorFlow + Teachable Machine versions -->
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1"></script>
@@ -11,162 +11,216 @@
 
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: linear-gradient(to bottom right, #f8f2ff, #fff);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        header {
+            background: #6a0dad;
+            color: white;
+            padding: 25px 10px;
             text-align: center;
-            padding: 20px;
-            background: #faf5ff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        h1 {
-            color: #6a0dad; /* purple */
+        header h1 {
+            margin: 0;
+            font-size: 40px;
+            letter-spacing: 1px;
+            font-weight: 700;
         }
 
-        .intro-box {
+        .section {
             background: white;
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 700px;
-            border-radius: 12px;
-            border-left: 8px solid #b30000; /* red stripe */
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 25px;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-left: 10px solid #b30000;
+        }
+
+        .section h2 {
+            color: #6a0dad;
+            margin-top: 0;
+            font-size: 28px;
         }
 
         #preview {
             margin-top: 20px;
-            max-width: 300px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            max-width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
         .result-line {
-            background: white;
-            padding: 10px;
-            margin: 8px auto;
-            width: 260px;
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            background: #faf5ff;
+            padding: 12px;
+            margin: 10px auto;
+            width: 300px;
+            border-radius: 8px;
             font-size: 18px;
+            border-left: 6px solid #6a0dad;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
         .final-result {
-            margin-top: 20px;
-            font-size: 24px;
+            margin-top: 25px;
+            font-size: 28px;
             font-weight: bold;
         }
 
         .leukemia {
-            color: #b30000; /* red */
+            color: #b30000;
         }
 
         .healthy {
-            color: #008000; /* green */
+            color: #008000;
         }
 
         .next-steps {
             margin-top: 20px;
-            background: #ffffff;
-            padding: 15px;
-            border-radius: 10px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            border-left: 8px solid #6a0dad; /* purple */
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 10px solid #6a0dad;
             font-size: 18px;
+            line-height: 1.6;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .info-box {
+            background: #faf5ff;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 10px solid #6a0dad;
+            font-size: 18px;
+            line-height: 1.6;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+
+        input[type="file"] {
+            margin-top: 15px;
+            font-size: 16px;
         }
     </style>
 </head>
 
 <body>
 
-    <h1>Leukemia Detector</h1>
+<header>
+    <h1>Acute Lymphoblastic Leukemia Detector</h1>
+</header>
 
-    <div class="intro-box">
-        <p>
-            Upload a blood smear image for review through machine learning.
-        </p>
-        <p>
-            This model has demonstrated approximately <strong>75% accuracy</strong> in identifying potential signs of Acute Lymphoblastic Leukemia (ALL).
-        </p>
-        <p style="color:#d10e0e; font-weight:bold;">
-            ⚠ Disclaimer: This tool is NOT a medical diagnostic device.  
-            It is for educational purposes only.
-        </p>
+<div class="section">
+    <h2>About This Project</h2>
+    <p>
+        Upload a blood smear image for review through machine learning.
+        This model has demonstrated approximately <strong>75% accuracy</strong> in identifying potential signs of Acute Lymphoblastic Leukemia (ALL).
+    </p>
+    <p style="color:#b30000; font-weight:bold;">
+        ⚠ This tool is NOT a medical diagnostic device.  
+        It is for educational purposes only.
+    </p>
+</div>
+
+<div class="section">
+    <h2>What is ALL?</h2>
+    <div class="info-box">
+        Acute Lymphoblastic Leukemia (ALL) is a type of cancer that affects the blood and bone marrow. 
+        It occurs when the body produces large numbers of immature white blood cells called lymphoblasts. 
+        These abnormal cells crowd out healthy blood cells, making it harder for the body to fight infections, 
+        carry oxygen, and control bleeding.<br><br>
+
+        ALL is most common in children and older adults but can occur at any age. Early detection and medical evaluation 
+        are important because ALL is treatable, especially when diagnosed early. This project uses machine 
+        learning to explore how computers can recognize visual patterns in blood smear images. However, this is not a medical 
+        diagnostic evaluation tool.
     </div>
+</div>
 
-    <h2>Upload an Image</h2>
+<div class="section">
+    <h2>Upload Your Image</h2>
     <input type="file" id="imageUpload" accept="image/*">
     <br>
     <img id="preview">
+</div>
 
+<div class="section">
+    <h2>Model Predictions</h2>
     <div id="results"></div>
     <div id="final" class="final-result"></div>
     <div id="steps" class="next-steps"></div>
+</div>
 
-    <script>
-        const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
+<script>
+    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
 
-        let model;
+    let model;
 
-        async function loadModel() {
-            if (model) return;
-            model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
-        }
+    async function loadModel() {
+        if (model) return;
+        model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+    }
 
-        document.getElementById("imageUpload").addEventListener("change", async function (event) {
-            await loadModel();
+    document.getElementById("imageUpload").addEventListener("change", async function (event) {
+        await loadModel();
 
-            const file = event.target.files[0];
-            const img = document.getElementById("preview");
-            img.src = window.URL.createObjectURL(file);
+        const file = event.target.files[0];
+        const img = document.getElementById("preview");
+        img.src = window.URL.createObjectURL(file);
 
-            img.onload = async () => {
-                const predictions = await model.predict(img);
+        img.onload = async () => {
+            const predictions = await model.predict(img);
 
-                const resultsBox = document.getElementById("results");
-                const finalBox = document.getElementById("final");
-                const stepsBox = document.getElementById("steps");
+            const resultsBox = document.getElementById("results");
+            const finalBox = document.getElementById("final");
+            const stepsBox = document.getElementById("steps");
 
-                resultsBox.innerHTML = "";
-                stepsBox.innerHTML = "";
+            resultsBox.innerHTML = "";
+            stepsBox.innerHTML = "";
 
-                let leukemiaProb = 0;
-                let healthyProb = 0;
+            let leukemiaProb = 0;
+            let healthyProb = 0;
 
-                predictions.forEach(p => {
-                    const percent = (p.probability * 100).toFixed(2);
+            predictions.forEach(p => {
+                const percent = (p.probability * 100).toFixed(2);
 
-                    const line = document.createElement("div");
-                    line.className = "result-line";
-                    line.textContent = `${p.className}: ${percent}%`;
-                    resultsBox.appendChild(line);
+                const line = document.createElement("div");
+                line.className = "result-line";
+                line.textContent = `${p.className}: ${percent}%`;
+                resultsBox.appendChild(line);
 
-                    if (p.className.toLowerCase() === "leukemia") leukemiaProb = p.probability;
-                    if (p.className.toLowerCase() === "healthy") healthyProb = p.probability;
-                });
+                if (p.className.toLowerCase() === "all") leukemiaProb = p.probability;
+                if (p.className.toLowerCase() === "healthy") healthyProb = p.probability;
+            });
 
-                if (leukemiaProb > 0.5) {
-                    finalBox.innerHTML = `Final Result: <span class="leukemia">Leukemia (${(leukemiaProb * 100).toFixed(2)}%)</span>`;
+            if (leukemiaProb > 0.5) {
+                finalBox.innerHTML = `Final Result: <span class="leukemia">ALL (${(leukemiaProb * 100).toFixed(2)}%)</span>`;
 
-                    stepsBox.innerHTML = `
-                        This result suggests that the model detected features commonly associated with leukemia in this image.<br><br>
-                        This does NOT confirm any medical condition.<br><br>
-                        If this were a real medical concern, the next step would be to consult a licensed healthcare professional who can perform proper diagnostic testing and provide guidance.<br><br>
-                        This tool is for educational use only.
-                    `;
-                } else {
-                    finalBox.innerHTML = `Final Result: <span class="healthy">Healthy (${(healthyProb * 100).toFixed(2)}%)</span>`;
+                stepsBox.innerHTML = `
+                    This result suggests that the model detected features commonly associated with leukemia in this image.<br><br>
+                    This does NOT confirm any medical condition.<br><br>
+                    If this were a real medical concern, the next step would be to consult a licensed healthcare professional who can perform proper diagnostic testing and provide guidance.<br><br>
+                    This tool is for educational use only.
+                `;
+            } else {
+                finalBox.innerHTML = `Final Result: <span class="healthy">Healthy (${(healthyProb * 100).toFixed(2)}%)</span>`;
 
-                    stepsBox.innerHTML = `
-                        This result suggests that the model did not detect features commonly associated with leukemia in this image.<br><br>
-                        This does NOT guarantee that the sample is medically healthy.<br><br>
-                        Only a trained medical professional can evaluate real blood samples and provide an accurate diagnosis.<br><br>
-                        This tool is intended for educational use only.
-                    `;
-                }
-            };
-        });
-    </script>
+                stepsBox.innerHTML = `
+                    This result suggests that the model did not detect features commonly associated with leukemia in this image.<br><br>
+                    This does NOT guarantee that the sample is medically healthy.<br><br>
+                    Only a trained medical professional can evaluate real blood samples and provide an accurate diagnosis.<br><br>
+                    This tool is intended for educational use only.
+                `;
+            }
+        };
+    });
+</script>
 
 </body>
 </html>
