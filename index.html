@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALL Blood Cell Detector</title>
+<title>ALL AI Scanner</title>
 
 <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
@@ -11,102 +11,119 @@
 <style>
     body {
         margin: 0;
-        font-family: "Inter", sans-serif;
-        background: #fafafa;
-        color: #222;
+        font-family: "Orbitron", sans-serif;
+        background: #0a0a0f;
+        color: #e6e6e6;
+        overflow-x: hidden;
     }
 
+    /* Glowing Header */
     header {
-        background: linear-gradient(90deg, #b3003c, #6a0dad);
-        padding: 25px;
         text-align: center;
+        padding: 35px 10px;
+        font-size: 36px;
+        font-weight: 900;
+        letter-spacing: 2px;
         color: white;
-        font-size: 32px;
-        font-weight: 800;
-        letter-spacing: 1px;
+        background: linear-gradient(90deg, #b3003c, #6a0dad, #0b8f4f);
+        box-shadow: 0 0 25px #6a0dad;
+        text-shadow: 0 0 12px rgba(255,255,255,0.6);
     }
 
     .container {
-        max-width: 900px;
+        max-width: 1000px;
         margin: 40px auto;
         padding: 20px;
+        text-align: center;
     }
 
+    /* Holographic Buttons */
     .nav-buttons {
         display: flex;
         justify-content: center;
-        gap: 20px;
-        margin-bottom: 30px;
+        gap: 25px;
+        margin-bottom: 40px;
     }
 
     .nav-buttons button {
-        padding: 15px 25px;
-        font-size: 18px;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        font-weight: 600;
+        padding: 18px 30px;
+        font-size: 20px;
+        font-weight: 700;
+        border: 2px solid rgba(255,255,255,0.2);
+        border-radius: 12px;
+        background: rgba(20,20,30,0.6);
         color: white;
-        transition: 0.2s;
+        cursor: pointer;
+        backdrop-filter: blur(6px);
+        transition: 0.25s;
+        box-shadow: 0 0 12px rgba(255,255,255,0.1);
     }
 
-    .btn-test { background: #b3003c; }
-    .btn-symptoms { background: #0b8f4f; }
-    .btn-info { background: #6a0dad; }
+    .btn-test { border-color: #b3003c; box-shadow: 0 0 15px #b3003c55; }
+    .btn-symptoms { border-color: #0b8f4f; box-shadow: 0 0 15px #0b8f4f55; }
+    .btn-info { border-color: #6a0dad; box-shadow: 0 0 15px #6a0dad55; }
 
     .nav-buttons button:hover {
-        opacity: 0.85;
-        transform: scale(1.05);
+        transform: scale(1.08);
+        box-shadow: 0 0 25px currentColor;
     }
 
+    /* Futuristic Panels */
     .section {
         display: none;
-        background: white;
-        padding: 25px;
-        border-radius: 14px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-        animation: fadeIn 0.3s ease-in-out;
+        background: rgba(20,20,30,0.7);
+        padding: 30px;
+        border-radius: 16px;
+        border: 1px solid rgba(255,255,255,0.1);
+        box-shadow: 0 0 25px rgba(255,255,255,0.08);
+        backdrop-filter: blur(8px);
+        animation: fadeIn 0.4s ease-out;
+        text-align: left;
     }
 
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
 
     .section h2 {
-        margin-top: 0;
-        font-size: 28px;
         color: #b3003c;
-        font-weight: 700;
+        font-size: 28px;
+        margin-top: 0;
+        text-shadow: 0 0 10px #b3003c88;
     }
 
     .info-box {
-        background: #f3e6ef;
-        padding: 18px;
-        border-radius: 10px;
+        background: rgba(255,255,255,0.05);
+        padding: 20px;
+        border-radius: 12px;
+        border-left: 4px solid #6a0dad;
         line-height: 1.6;
     }
 
+    /* Image Preview */
     #preview {
         margin-top: 20px;
         max-width: 100%;
         border-radius: 12px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 0 20px #6a0dad88;
     }
 
+    /* Prediction Lines */
     .result-line {
-        background: #f3e6ef;
-        padding: 10px;
+        background: rgba(255,255,255,0.05);
+        padding: 12px;
         margin: 10px 0;
-        border-radius: 8px;
+        border-radius: 10px;
         border-left: 6px solid #b3003c;
         font-size: 18px;
     }
 
     .final-result {
         margin-top: 20px;
-        font-size: 24px;
+        font-size: 26px;
         font-weight: bold;
+        text-shadow: 0 0 10px #fff;
     }
 
     .leukemia { color: #b3003c; }
@@ -114,12 +131,11 @@
 
     .next-steps {
         margin-top: 20px;
-        background: #fff;
+        background: rgba(255,255,255,0.05);
         padding: 18px;
         border-radius: 10px;
-        border-left: 8px solid #6a0dad;
+        border-left: 6px solid #6a0dad;
         line-height: 1.6;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
 
     .symptom-list li {
@@ -130,27 +146,27 @@
 
 <body>
 
-<header>Acute Lymphoblastic Leukemia Detector</header>
+<header>ALL AI SCANNER INTERFACE</header>
 
 <div class="container">
 
-    <!-- Navigation Buttons -->
+    <!-- Navigation -->
     <div class="nav-buttons">
-        <button class="btn-test" onclick="showSection('test')">Start Test</button>
+        <button class="btn-test" onclick="showSection('test')">Start Scan</button>
         <button class="btn-symptoms" onclick="showSection('symptoms')">Symptoms</button>
         <button class="btn-info" onclick="showSection('info')">What is ALL?</button>
     </div>
 
-    <!-- HOME INTRO -->
+    <!-- Home -->
     <div id="home" class="section" style="display:block;">
         <h2>Welcome</h2>
-        <p>This tool uses machine learning to analyze blood smear images and classify them as Healthy or ALL‑like.</p>
+        <p>This interface simulates a futuristic AI blood cell scanner for educational purposes.</p>
         <p style="color:#b3003c; font-weight:bold;">
-            ⚠ For educational use only — not a medical diagnostic tool.
+            ⚠ Not a medical diagnostic tool.
         </p>
     </div>
 
-    <!-- TEST SECTION -->
+    <!-- Test -->
     <div id="test" class="section">
         <h2>Upload Blood Cell Image</h2>
         <input type="file" id="imageUpload" accept="image/*">
@@ -160,12 +176,12 @@
         <div id="steps" class="next-steps"></div>
     </div>
 
-    <!-- SYMPTOMS SECTION -->
+    <!-- Symptoms -->
     <div id="symptoms" class="section">
-        <h2>Common Symptoms of ALL</h2>
+        <h2>Common Symptoms</h2>
         <div class="info-box">
             <ul class="symptom-list">
-                <li>Fatigue or unusual tiredness</li>
+                <li>Fatigue</li>
                 <li>Frequent infections</li>
                 <li>Easy bruising or bleeding</li>
                 <li>Pale skin</li>
@@ -175,19 +191,15 @@
                 <li>Shortness of breath</li>
                 <li>Loss of appetite or weight loss</li>
             </ul>
-            <strong style="color:#b3003c;">These symptoms can appear in many conditions. Only a licensed medical professional can evaluate symptoms.</strong>
         </div>
     </div>
 
-    <!-- WHAT IS ALL SECTION -->
+    <!-- Info -->
     <div id="info" class="section">
         <h2>What is ALL?</h2>
         <div class="info-box">
-            Acute Lymphoblastic Leukemia (ALL) is a cancer of the blood and bone marrow involving overproduction of immature white blood cells called lymphoblasts.
-            <br><br>
-            These abnormal cells crowd out healthy blood cells, affecting immunity, oxygen transport, and clotting.
-            <br><br>
-            ALL is most common in children but can occur at any age. Early medical evaluation is important.
+            Acute Lymphoblastic Leukemia (ALL) is a cancer involving overproduction of immature white blood cells.
+            These cells crowd out healthy blood cells, affecting immunity, oxygen transport, and clotting.
         </div>
     </div>
 
@@ -242,18 +254,16 @@ document.getElementById("imageUpload").addEventListener("change", async function
         });
 
         if (bestClass.toLowerCase().includes("all")) {
-            finalBox.innerHTML = `Final Result: <span class="leukemia">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
+            finalBox.innerHTML = `Scan Result: <span class="leukemia">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
             stepsBox.innerHTML = `
-                The model detected features commonly associated with ALL Blood Cells.<br><br>
-                This does NOT confirm any medical condition.<br><br>
-                Consult a licensed healthcare professional for real diagnostic testing.
+                The AI detected features commonly associated with ALL-like cells.<br><br>
+                This is for educational simulation only.
             `;
         } else {
-            finalBox.innerHTML = `Final Result: <span class="healthy">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
+            finalBox.innerHTML = `Scan Result: <span class="healthy">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
             stepsBox.innerHTML = `
-                The model did not detect features commonly associated with ALL Blood Cells.<br><br>
-                This does NOT guarantee medical health.<br><br>
-                Only a trained medical professional can evaluate real blood samples.
+                The AI did not detect ALL-like features.<br><br>
+                This is for educational simulation only.
             `;
         }
     };
