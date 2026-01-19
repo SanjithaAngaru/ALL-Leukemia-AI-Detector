@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leukemia Detector (Webcam + Upload)</title>
+    <title>Leukemia Detector (Upload Only)</title>
 
-    <!-- Load TensorFlow + Teachable Machine -->
-    <script src="https://cdn.jsdelivr.net"></script>
-    <script src="https://cdn.jsdelivr.net"></script>
+    <!-- Correct TensorFlow + Teachable Machine versions -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
-    <!-- Original CSS Styles -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,24 +17,23 @@
             background: #f5f5f5;
         }
 
-        h1 { margin-bottom: 10px; }
-
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin: 10px;
+        .intro-box {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 700px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
-        button:hover { background: #45a049; }
+        #preview {
+            margin-top: 20px;
+            max-width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
 
-        #webcam-container, #upload-container { margin-top: 20px; }
-
-        #label-container div, #upload-labels div {
+        #upload-labels div {
             margin-top: 8px;
             font-size: 18px;
             background: white;
@@ -47,170 +45,64 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
 
-        #preview {
-            margin-top: 20px;
-            max-width: 300px;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            display: none; /* Hidden until an image is uploaded */
-        }
-
         .final-result {
-            margin-top: 15px;
-            font-size: 22px;
+            margin-top: 20px;
+            font-size: 24px;
             font-weight: bold;
-            color: #222;
-        }
-
-        .intro-box {
-            background: white;
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 700px;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .intro-list {
-            text-align: left;
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 16px;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- RESTORED INTRODUCTION SECTION -->
     <div class="intro-box">
         <h1>Acute Lymphoblastic Leukemia (ALL) Detection Tool</h1>
 
         <p>
-            This project uses a machine learning model trained with Google Teachable Machine to help
-            classify blood smear images as either <strong>Healthy</strong> or showing signs of 
-            <strong>Acute Lymphoblastic Leukemia (ALL)</strong>.
+            Upload a blood smear image and this tool will analyze it using a machine learning model
+            trained with Google Teachable Machine.
         </p>
 
         <p>
-            This model was created for a science fair project and demonstrated approximately 
-            <strong>75% accuracy</strong> when tested on unseen images. It shows how artificial 
-            intelligence can support early screening in medical imaging.
+            The model achieved approximately <strong>75% accuracy</strong> during testing for my
+            science fair project.
         </p>
 
         <p style="color:#b30000; font-weight:bold;">
-            ⚠ This tool is NOT a medical diagnostic device.  
-            It is for educational and experimental purposes only.
+            ⚠ Not a medical diagnostic tool — for educational use only.
         </p>
-
-        <p>You can choose between two detection methods:</p>
-
-        <ul class="intro-list">
-            <li><strong>Webcam Detection</strong> – Uses your camera to classify live images.</li>
-            <li><strong>Image Upload Detection</strong> – Upload a blood smear image for analysis.</li>
-        </ul>
-
-        <p>Scroll down to begin.</p>
     </div>
 
-    <!-- Webcam Section -->
-    <h2>Webcam Detection</h2>
-    <button onclick="initWebcam()">Start Webcam</button>
-    <div id="webcam-container"></div>
-    <div id="label-container"></div>
-    <div id="webcam-final" class="final-result"></div>
-
-    <hr style="margin: 40px 0;">
-
-    <!-- Upload Section -->
     <h2>Upload an Image</h2>
     <input type="file" id="imageUpload" accept="image/*">
     <br>
-    <img id="preview" src="">
+    <img id="preview">
+
     <div id="upload-labels"></div>
     <div id="upload-final" class="final-result"></div>
 
-    <!-- FIXED JAVASCRIPT -->
     <script>
-        // Renamed 'URL' to 'MODEL_URL' to avoid browser naming conflicts
-        const MODEL_URL = "https://teachablemachine.withgoogle.com";
+        const URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
 
-        let model, webcam, labelContainer, maxPredictions;
+        let model, maxPredictions;
 
         async function loadModel() {
-            if (!model) {
-                const modelJson = MODEL_URL + "model.json";
-                const metadataJson = MODEL_URL + "metadata.json";
-                model = await tmImage.load(modelJson, metadataJson);
-                maxPredictions = model.getTotalClasses();
-            }
+            const modelURL = URL + "model.json";
+            const metadataURL = URL + "metadata.json";
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
         }
 
-        // --- WEBCAM MODE ---
-        async function initWebcam() {
-            await loadModel();
-
-            const flip = true;
-            webcam = new tmImage.Webcam(200, 200, flip);
-            
-            try {
-                await webcam.setup(); // Request permission
-                await webcam.play();
-                window.requestAnimationFrame(loop);
-
-                document.getElementById("webcam-container").innerHTML = "";
-                document.getElementById("webcam-container").appendChild(webcam.canvas);
-
-                labelContainer = document.getElementById("label-container");
-                labelContainer.innerHTML = "";
-                for (let i = 0; i < maxPredictions; i++) {
-                    labelContainer.appendChild(document.createElement("div"));
-                }
-            } catch (e) {
-                alert("Could not access webcam. Please ensure you are using HTTPS or a local server.");
-                console.error(e);
-            }
-        }
-
-        async function loop() {
-            webcam.update();
-            await predictWebcam();
-            window.requestAnimationFrame(loop);
-        }
-
-        async function predictWebcam() {
-            const prediction = await model.predict(webcam.canvas);
-            let highestClass = "";
-            let highestProb = 0;
-
-            for (let i = 0; i < maxPredictions; i++) {
-                const prob = prediction[i].probability;
-                labelContainer.childNodes[i].innerHTML = `${prediction[i].className}: ${(prob * 100).toFixed(2)}%`;
-
-                if (prob > highestProb) {
-                    highestProb = prob;
-                    highestClass = prediction[i].className;
-                }
-            }
-            document.getElementById("webcam-final").innerHTML = `Final Result: ${highestClass}`;
-        }
-
-        // --- UPLOAD MODE ---
         document.getElementById("imageUpload").addEventListener("change", async function (event) {
             await loadModel();
 
             const file = event.target.files[0];
-            if (!file) return;
-
             const img = document.getElementById("preview");
-            img.style.display = "inline-block"; // Show image
-            
-            // Use window.URL explicitly to avoid confusion with the model URL
-            img.src = window.URL.createObjectURL(file);
+            img.src = URL.createObjectURL(file);
 
             img.onload = async () => {
                 const prediction = await model.predict(img);
+
                 const uploadLabels = document.getElementById("upload-labels");
                 uploadLabels.innerHTML = "";
 
@@ -218,8 +110,9 @@
                 let highestProb = 0;
 
                 prediction.forEach(p => {
+                    const percent = (p.probability * 100).toFixed(2);
                     const div = document.createElement("div");
-                    div.innerHTML = `${p.className}: ${(p.probability * 100).toFixed(2)}%`;
+                    div.innerHTML = `${p.className}: ${percent}%`;
                     uploadLabels.appendChild(div);
 
                     if (p.probability > highestProb) {
@@ -228,7 +121,9 @@
                     }
                 });
 
-                document.getElementById("upload-final").innerHTML = `Final Result: ${highestClass}`;
+                const finalPercent = (highestProb * 100).toFixed(2);
+                document.getElementById("upload-final").innerHTML =
+                    `Final Result: ${highestClass} (${finalPercent}%)`;
             };
         });
     </script>
