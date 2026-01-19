@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,25 +16,12 @@
             padding: 20px;
             background: #f5f5f5;
         }
-         .intro-box {
-            background: white;
-            padding: 20px;
-            margin: 20px auto;
-            max-width: 700px;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
 
         #preview {
             margin-top: 20px;
             max-width: 300px;
             border-radius: 10px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-        }
-
-        #results {
-            margin-top: 20px;
-            font-size: 20px;
         }
 
         .result-line {
@@ -42,6 +31,7 @@
             width: 260px;
             border-radius: 6px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            font-size: 18px;
         }
 
         .final-result {
@@ -54,25 +44,9 @@
 
 <body>
 
-    <div class="intro-box">
-        <h1>Acute Lymphoblastic Leukemia (ALL) Detection Tool</h1>
+    <h1>Leukemia Detector (Upload Only)</h1>
+    <p>Upload a blood smear image to analyze it.</p>
 
-        <p>
-            Upload a blood smear image and this tool will analyze it using a machine learning model
-            trained with Google Teachable Machine.
-        </p>
-
-        <p>
-            The model achieved approximately <strong>75% accuracy</strong> during testing for my
-            science fair project.
-        </p>
-
-        <p style="color:#b30000; font-weight:bold;">
-            ⚠ Not a medical diagnostic tool — for educational use only.
-        </p>
-    </div>
-
-    <h2>Upload an Image</h2>
     <input type="file" id="imageUpload" accept="image/*">
     <br>
     <img id="preview">
@@ -84,12 +58,10 @@
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
 
         let model;
-        let maxClasses;
 
         async function loadModel() {
-            if (model) return; // prevent reloading
+            if (model) return;
             model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
-            maxClasses = model.getTotalClasses();
         }
 
         document.getElementById("imageUpload").addEventListener("change", async function (event) {
@@ -97,7 +69,7 @@
 
             const file = event.target.files[0];
             const img = document.getElementById("preview");
-            img.src = URL.createObjectURL(file);
+            img.src = window.URL.createObjectURL(file);
 
             img.onload = async () => {
                 const predictions = await model.predict(img);
