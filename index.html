@@ -14,7 +14,21 @@
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
-            background: #f5f5f5;
+            background: #faf5ff;
+        }
+
+        h1 {
+            color: #6a0dad; /* purple */
+        }
+
+        .intro-box {
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 700px;
+            border-radius: 12px;
+            border-left: 8px solid #b30000; /* red stripe */
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
         #preview {
@@ -39,20 +53,55 @@
             font-size: 24px;
             font-weight: bold;
         }
+
+        .leukemia {
+            color: #b30000; /* red */
+        }
+
+        .healthy {
+            color: #008000; /* green */
+        }
+
+        .next-steps {
+            margin-top: 20px;
+            background: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border-left: 8px solid #6a0dad; /* purple */
+            font-size: 18px;
+        }
     </style>
 </head>
 
 <body>
 
-    <h1>Leukemia Detector (Upload Only)</h1>
-    <p>Upload a blood smear image to analyze it.</p>
+    <h1>Leukemia Detector</h1>
 
+    <div class="intro-box">
+        <p>
+            Upload a blood smear image for review through machine learning.
+        </p>
+        <p>
+            This model has demonstrated approximately <strong>75% accuracy</strong> in identifying potential signs of Acute Lymphoblastic Leukemia (ALL).
+        </p>
+        <p style="color:#d10e0e; font-weight:bold;">
+            ⚠ Disclaimer: This tool is NOT a medical diagnostic device.  
+            It is for educational purposes only.
+        </p>
+    </div>
+
+    <h2>Upload an Image</h2>
     <input type="file" id="imageUpload" accept="image/*">
     <br>
     <img id="preview">
 
     <div id="results"></div>
     <div id="final" class="final-result"></div>
+    <div id="steps" class="next-steps"></div>
 
     <script>
         const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
@@ -75,10 +124,14 @@
                 const predictions = await model.predict(img);
 
                 const resultsBox = document.getElementById("results");
-                resultsBox.innerHTML = "";
+                const finalBox = document.getElementById("final");
+                const stepsBox = document.getElementById("steps");
 
-                let bestClass = "";
-                let bestProb = 0;
+                resultsBox.innerHTML = "";
+                stepsBox.innerHTML = "";
+
+                let leukemiaProb = 0;
+                let healthyProb = 0;
 
                 predictions.forEach(p => {
                     const percent = (p.probability * 100).toFixed(2);
@@ -88,14 +141,29 @@
                     line.textContent = `${p.className}: ${percent}%`;
                     resultsBox.appendChild(line);
 
-                    if (p.probability > bestProb) {
-                        bestProb = p.probability;
-                        bestClass = p.className;
-                    }
+                    if (p.className.toLowerCase() === "leukemia") leukemiaProb = p.probability;
+                    if (p.className.toLowerCase() === "healthy") healthyProb = p.probability;
                 });
 
-                document.getElementById("final").textContent =
-                    `Final Result: ${bestClass} (${(bestProb * 100).toFixed(2)}%)`;
+                if (leukemiaProb > 0.5) {
+                    finalBox.innerHTML = `Final Result: <span class="leukemia">Leukemia (${(leukemiaProb * 100).toFixed(2)}%)</span>`;
+
+                    stepsBox.innerHTML = `
+                        This result suggests that the model detected features commonly associated with leukemia in this image.<br><br>
+                        This does NOT confirm any medical condition.<br><br>
+                        If this were a real medical concern, the next step would be to consult a licensed healthcare professional who can perform proper diagnostic testing and provide guidance.<br><br>
+                        This tool is for educational use only.
+                    `;
+                } else {
+                    finalBox.innerHTML = `Final Result: <span class="healthy">Healthy (${(healthyProb * 100).toFixed(2)}%)</span>`;
+
+                    stepsBox.innerHTML = `
+                        This result suggests that the model did not detect features commonly associated with leukemia in this image.<br><br>
+                        This does NOT guarantee that the sample is medically healthy.<br><br>
+                        Only a trained medical professional can evaluate real blood samples and provide an accurate diagnosis.<br><br>
+                        This tool is intended for educational use only.
+                    `;
+                }
             };
         });
     </script>
