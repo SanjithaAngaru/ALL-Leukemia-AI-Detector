@@ -1,264 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ALL Blood Cell Detector</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALL Blood Cell Detector</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.3.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
 
-    <style>
-        body {
-            font-family: "Inter", sans-serif;
-            background: #fafafa;
-            margin: 0;
-            padding: 0;
-            color: #222;
-        }
+<style>
+    body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: #fafafa;
+        color: #222;
+    }
 
-        header {
-            background: linear-gradient(90deg, #7a001f, #a3002a);
-            color: white;
-            padding: 30px 10px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
+    header {
+        background: linear-gradient(90deg, #b3003c, #6a0dad);
+        padding: 25px;
+        text-align: center;
+        color: white;
+        font-size: 32px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
 
-        header h1 {
-            margin: 0;
-            font-size: 40px;
-            font-weight: 800;
-        }
+    .container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 35px;
-        }
+    .nav-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
 
-        .section {
-            background: white;
-            padding: 25px;
-            border-radius: 14px;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-            border-top: 8px solid #7a001f;
-        }
+    .nav-buttons button {
+        padding: 15px 25px;
+        font-size: 18px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        color: white;
+        transition: 0.2s;
+    }
 
-        .section h2 {
-            margin-top: 0;
-            font-size: 26px;
-            color: #7a001f;
-            font-weight: 700;
-        }
+    .btn-test { background: #b3003c; }
+    .btn-symptoms { background: #0b8f4f; }
+    .btn-info { background: #6a0dad; }
 
-        .info-box {
-            background: #f8eef1;
-            padding: 18px;
-            border-radius: 10px;
-            line-height: 1.6;
-        }
+    .nav-buttons button:hover {
+        opacity: 0.85;
+        transform: scale(1.05);
+    }
 
-        #preview {
-            margin-top: 20px;
-            max-width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-        }
+    .section {
+        display: none;
+        background: white;
+        padding: 25px;
+        border-radius: 14px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        animation: fadeIn 0.3s ease-in-out;
+    }
 
-        .result-line {
-            background: #f8eef1;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 8px;
-            border-left: 6px solid #7a001f;
-            font-size: 18px;
-        }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
 
-        .final-result {
-            margin-top: 20px;
-            font-size: 24px;
-            font-weight: bold;
-        }
+    .section h2 {
+        margin-top: 0;
+        font-size: 28px;
+        color: #b3003c;
+        font-weight: 700;
+    }
 
-        .leukemia {
-            color: #7a001f;
-        }
+    .info-box {
+        background: #f3e6ef;
+        padding: 18px;
+        border-radius: 10px;
+        line-height: 1.6;
+    }
 
-        .healthy {
-            color: #006400;
-        }
+    #preview {
+        margin-top: 20px;
+        max-width: 100%;
+        border-radius: 12px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
 
-        .next-steps {
-            margin-top: 20px;
-            background: #fff;
-            padding: 18px;
-            border-radius: 10px;
-            border-left: 8px solid #7a001f;
-            line-height: 1.6;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-        }
+    .result-line {
+        background: #f3e6ef;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 8px;
+        border-left: 6px solid #b3003c;
+        font-size: 18px;
+    }
 
-        input[type="file"] {
-            margin-top: 15px;
-            font-size: 16px;
-        }
+    .final-result {
+        margin-top: 20px;
+        font-size: 24px;
+        font-weight: bold;
+    }
 
-        /* NEW SYMPTOMS SECTION STYLE */
-        .symptom-list li {
-            margin-bottom: 8px;
-            padding-left: 5px;
-        }
-    </style>
+    .leukemia { color: #b3003c; }
+    .healthy { color: #0b8f4f; }
+
+    .next-steps {
+        margin-top: 20px;
+        background: #fff;
+        padding: 18px;
+        border-radius: 10px;
+        border-left: 8px solid #6a0dad;
+        line-height: 1.6;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .symptom-list li {
+        margin-bottom: 8px;
+    }
+</style>
 </head>
 
 <body>
 
-<header>
-    <h1>Acute Lymphoblastic Leukemia (ALL) Blood Cell Detector</h1>
-</header>
+<header>Acute Lymphoblastic Leukemia Detector</header>
 
 <div class="container">
 
-    <!-- LEFT COLUMN -->
-    <div>
-
-        <div class="section">
-            <h2>About This Project</h2>
-            <p>
-                This project uses machine learning to analyze blood smear images and identify whether they contain 
-                <strong>Healthy Blood Cells</strong> or <strong>ALL Blood Cells</strong>.
-            </p>
-            <p>
-                The model has achieved approximately <strong>75% accuracy</strong> during testing.
-            </p>
-            <p style="color:#7a001f; font-weight:bold;">
-                ⚠ This tool is NOT a medical diagnostic device.  
-                It is for educational purposes only.
-            </p>
-        </div>
-
-        <div class="section">
-            <h2>What is ALL?</h2>
-            <div class="info-box">
-                Acute Lymphoblastic Leukemia (ALL) is a cancer of the blood and bone marrow. It occurs when the body 
-                produces large numbers of immature white blood cells called lymphoblasts. These abnormal cells crowd 
-                out healthy blood cells, affecting immunity, oxygen transport, and clotting.
-                <br><br>
-                ALL is most common in children but can occur at any age. Early medical evaluation is important because 
-                ALL is treatable, especially when diagnosed early.
-            </div>
-        </div>
-
-        <!-- NEW SYMPTOMS SECTION -->
-        <div class="section">
-            <h2>Common Symptoms of ALL</h2>
-            <div class="info-box">
-                <ul class="symptom-list">
-                    <li>Fatigue or unusual tiredness</li>
-                    <li>Frequent infections</li>
-                    <li>Easy bruising or bleeding</li>
-                    <li>Pale skin</li>
-                    <li>Bone or joint pain</li>
-                    <li>Swollen lymph nodes</li>
-                    <li>Fever or night sweats</li>
-                    <li>Shortness of breath</li>
-                    <li>Loss of appetite or weight loss</li>
-                </ul>
-                <strong style="color:#7a001f;">These symptoms can occur in many conditions, not just ALL.  
-                Only a licensed healthcare professional can evaluate symptoms or provide diagnosis.</strong>
-            </div>
-        </div>
-
+    <!-- Navigation Buttons -->
+    <div class="nav-buttons">
+        <button class="btn-test" onclick="showSection('test')">Start Test</button>
+        <button class="btn-symptoms" onclick="showSection('symptoms')">Symptoms</button>
+        <button class="btn-info" onclick="showSection('info')">What is ALL?</button>
     </div>
 
-    <!-- RIGHT COLUMN -->
-    <div>
+    <!-- HOME INTRO -->
+    <div id="home" class="section" style="display:block;">
+        <h2>Welcome</h2>
+        <p>This tool uses machine learning to analyze blood smear images and classify them as Healthy or ALL‑like.</p>
+        <p style="color:#b3003c; font-weight:bold;">
+            ⚠ For educational use only — not a medical diagnostic tool.
+        </p>
+    </div>
 
-        <div class="section">
-            <h2>Upload Your Image</h2>
-            <input type="file" id="imageUpload" accept="image/*">
-            <img id="preview">
+    <!-- TEST SECTION -->
+    <div id="test" class="section">
+        <h2>Upload Blood Cell Image</h2>
+        <input type="file" id="imageUpload" accept="image/*">
+        <img id="preview">
+        <div id="results"></div>
+        <div id="final" class="final-result"></div>
+        <div id="steps" class="next-steps"></div>
+    </div>
+
+    <!-- SYMPTOMS SECTION -->
+    <div id="symptoms" class="section">
+        <h2>Common Symptoms of ALL</h2>
+        <div class="info-box">
+            <ul class="symptom-list">
+                <li>Fatigue or unusual tiredness</li>
+                <li>Frequent infections</li>
+                <li>Easy bruising or bleeding</li>
+                <li>Pale skin</li>
+                <li>Bone or joint pain</li>
+                <li>Swollen lymph nodes</li>
+                <li>Fever or night sweats</li>
+                <li>Shortness of breath</li>
+                <li>Loss of appetite or weight loss</li>
+            </ul>
+            <strong style="color:#b3003c;">These symptoms can appear in many conditions. Only a licensed medical professional can evaluate symptoms.</strong>
         </div>
+    </div>
 
-        <div class="section">
-            <h2>Model Predictions</h2>
-            <div id="results"></div>
-            <div id="final" class="final-result"></div>
-            <div id="steps" class="next-steps"></div>
+    <!-- WHAT IS ALL SECTION -->
+    <div id="info" class="section">
+        <h2>What is ALL?</h2>
+        <div class="info-box">
+            Acute Lymphoblastic Leukemia (ALL) is a cancer of the blood and bone marrow involving overproduction of immature white blood cells called lymphoblasts.
+            <br><br>
+            These abnormal cells crowd out healthy blood cells, affecting immunity, oxygen transport, and clotting.
+            <br><br>
+            ALL is most common in children but can occur at any age. Early medical evaluation is important.
         </div>
-
     </div>
 
 </div>
 
 <script>
-    const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
+function showSection(id) {
+    document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+    document.getElementById(id).style.display = "block";
+}
 
-    let model;
+const MODEL_URL = "https://teachablemachine.withgoogle.com/models/j9gcdAIwd/";
+let model;
 
-    async function loadModel() {
-        if (model) return;
-        model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
-    }
+async function loadModel() {
+    if (model) return;
+    model = await tmImage.load(MODEL_URL + "model.json", MODEL_URL + "metadata.json");
+}
 
-    document.getElementById("imageUpload").addEventListener("change", async function (event) {
-        await loadModel();
+document.getElementById("imageUpload").addEventListener("change", async function (event) {
+    await loadModel();
 
-        const file = event.target.files[0];
-        const img = document.getElementById("preview");
-        img.src = window.URL.createObjectURL(file);
+    const file = event.target.files[0];
+    const img = document.getElementById("preview");
+    img.src = window.URL.createObjectURL(file);
 
-        img.onload = async () => {
-            const predictions = await model.predict(img);
+    img.onload = async () => {
+        const predictions = await model.predict(img);
 
-            const resultsBox = document.getElementById("results");
-            const finalBox = document.getElementById("final");
-            const stepsBox = document.getElementById("steps");
+        const resultsBox = document.getElementById("results");
+        const finalBox = document.getElementById("final");
+        const stepsBox = document.getElementById("steps");
 
-            resultsBox.innerHTML = "";
-            stepsBox.innerHTML = "";
+        resultsBox.innerHTML = "";
+        stepsBox.innerHTML = "";
 
-            let bestClass = "";
-            let bestProb = 0;
+        let bestClass = "";
+        let bestProb = 0;
 
-            predictions.forEach(p => {
-                const percent = (p.probability * 100).toFixed(2);
+        predictions.forEach(p => {
+            const percent = (p.probability * 100).toFixed(2);
 
-                const line = document.createElement("div");
-                line.className = "result-line";
-                line.textContent = `${p.className}: ${percent}%`;
-                resultsBox.appendChild(line);
+            const line = document.createElement("div");
+            line.className = "result-line";
+            line.textContent = `${p.className}: ${percent}%`;
+            resultsBox.appendChild(line);
 
-                if (p.probability > bestProb) {
-                    bestProb = p.probability;
-                    bestClass = p.className;
-                }
-            });
-
-            if (bestClass.toLowerCase().includes("all")) {
-                finalBox.innerHTML = `Final Result: <span class="leukemia">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
-                stepsBox.innerHTML = `
-                    The model detected features commonly associated with ALL Blood Cells.<br><br>
-                    This does NOT confirm any medical condition.<br><br>
-                    If this were a real medical concern, the next step would be to consult a licensed healthcare professional 
-                    who can perform proper diagnostic testing.<br><br>
-                    This tool is for educational use only.
-                `;
-            } else {
-                finalBox.innerHTML = `Final Result: <span class="healthy">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
-                stepsBox.innerHTML = `
-                    The model did not detect features commonly associated with ALL Blood Cells.<br><br>
-                    This does NOT guarantee medical health.<br><br>
-                    Only a trained medical professional can evaluate real blood samples and provide an accurate diagnosis.<br><br>
-                    This tool is for educational use only.
-                `;
+            if (p.probability > bestProb) {
+                bestProb = p.probability;
+                bestClass = p.className;
             }
-        };
-    });
+        });
+
+        if (bestClass.toLowerCase().includes("all")) {
+            finalBox.innerHTML = `Final Result: <span class="leukemia">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
+            stepsBox.innerHTML = `
+                The model detected features commonly associated with ALL Blood Cells.<br><br>
+                This does NOT confirm any medical condition.<br><br>
+                Consult a licensed healthcare professional for real diagnostic testing.
+            `;
+        } else {
+            finalBox.innerHTML = `Final Result: <span class="healthy">${bestClass} (${(bestProb * 100).toFixed(2)}%)</span>`;
+            stepsBox.innerHTML = `
+                The model did not detect features commonly associated with ALL Blood Cells.<br><br>
+                This does NOT guarantee medical health.<br><br>
+                Only a trained medical professional can evaluate real blood samples.
+            `;
+        }
+    };
+});
 </script>
 
 </body>
